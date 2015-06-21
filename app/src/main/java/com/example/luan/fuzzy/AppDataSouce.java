@@ -3,9 +3,11 @@ package com.example.luan.fuzzy;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.graphics.AvoidXfermode;
 import android.util.Log;
 
 import com.example.luan.model.Marca;
+import com.example.luan.model.Modelo;
 
 import java.io.IOException;
 import java.sql.SQLException;
@@ -59,16 +61,14 @@ public class AppDataSouce {
         return marcas;
     }
 
-    private Marca cursorToMarca(Cursor cursor) {
-        Marca marca = new Marca();
-        marca.setIdMarca(cursor.getLong(0));
-        marca.setNome(cursor.getString(1));
-
-        return marca;
-    }
-
     public ArrayList<Marca> findAllMarcas() {
         ArrayList<Marca> marcas = new ArrayList<Marca>();
+
+        //Default Value for spinner
+        Marca marcaDefaultValue = new Marca();
+        marcaDefaultValue.setNome("Selecione uma marca");
+        marcaDefaultValue.setIdMarca((long) 0);
+        marcas.add(marcaDefaultValue);
 
         Cursor cursor = database.
                 rawQuery("SELECT * FROM marca", null);
@@ -83,5 +83,77 @@ public class AppDataSouce {
         cursor.close();
 
         return marcas;
+    }
+
+    private Marca cursorToMarca(Cursor cursor) {
+        Marca marca = new Marca();
+        marca.setIdMarca(cursor.getLong(0));
+        marca.setNome(cursor.getString(1));
+
+        return marca;
+    }
+
+    public ArrayList<Modelo> findModelosByMarcaId(Long marcaId) {
+        ArrayList<Modelo> modelos = new ArrayList<Modelo>();
+
+        //Default Value for spinner
+        Modelo modeloDefaultValue = new Modelo();
+        modeloDefaultValue.setNome("Selecione um modelo");
+        modeloDefaultValue.setIdMarca((long) 0);
+        modeloDefaultValue.setIdModelo((long) 0);
+        modelos.add(modeloDefaultValue);
+
+        Cursor cursor = database.
+                rawQuery("SELECT * FROM modelo WHERE marca = ?", new String[]{marcaId.toString()} );
+
+        cursor.moveToFirst();
+        while (!cursor.isAfterLast()) {
+            Modelo modelo = cursorToModelo(cursor);
+            Log.d("Modelos: ", "idModelo: " + modelo.getIdModelo().toString() + " - Nome: " + modelo.getNome() + " - idMarca: " + modelo.getIdMarca().toString());
+            modelos.add(modelo);
+            cursor.moveToNext();
+        }
+        cursor.close();
+
+        return modelos;
+    }
+
+    private Modelo cursorToModelo(Cursor cursor) {
+        Modelo modelo = new Modelo();
+        modelo.setIdModelo(cursor.getLong(0));
+        modelo.setNome(cursor.getString(1));
+        modelo.setIdMarca(cursor.getLong(2));
+
+        return modelo;
+    }
+
+    public ArrayList<String> findAllAnosByTipoCombustivel(String tipoCombustivel, Long idModelo) {
+
+        ArrayList<String> anos = new ArrayList<String>();
+
+        //Default Value for spinner
+        anos.add("Selecione um ano");
+
+        Cursor cursor = database.
+                rawQuery("SELECT ano from ano_modelo WHERE combustivel = ? and modelo = ?", new String[]{tipoCombustivel, idModelo.toString()} );
+
+        cursor.moveToFirst();
+        while (!cursor.isAfterLast()) {
+            String ano = cursorToAno(cursor);
+            Log.d("Ano - ", ano.toString());
+            anos.add(ano);
+            cursor.moveToNext();
+        }
+        cursor.close();
+
+        return anos;
+    }
+
+    private String cursorToAno(Cursor cursor) {
+        String ano = null;
+
+        ano = cursor.getString(0);
+
+        return ano;
     }
 }

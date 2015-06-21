@@ -53,11 +53,11 @@ public class MarcaArrayAdapter  extends BaseAdapter{
         LayoutInflater inflater = (LayoutInflater)MyApplication.getAppContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View v = inflater.inflate(R.layout.listview_marcaspinner,null);
 
-        TextView titulo = (TextView)v.findViewById(R.id.tvNome);
-        titulo.setText(marca.getNome());
+        TextView nomeMarca = (TextView)v.findViewById(R.id.tvNome);
+        nomeMarca.setText(marca.getNome());
 
-        TextView username = (TextView)v.findViewById(R.id.tvId);
-        username.setText(marca.getIdMarca().toString());
+        TextView idMarca = (TextView)v.findViewById(R.id.tvId);
+        idMarca.setText(marca.getIdMarca().toString());
 
         return v;
     }

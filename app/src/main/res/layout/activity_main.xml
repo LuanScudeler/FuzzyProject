@@ -7,22 +7,41 @@
 
     <Spinner
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="25dp"
         android:id="@+id/sMarca"
         android:layout_alignParentTop="true"
         android:layout_marginTop="30dp"
-        android:layout_toLeftOf="@+id/npAno"
-        android:layout_toStartOf="@+id/npAno" />
+         />
 
     <Spinner
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="25dp"
         android:id="@+id/sModelo"
         android:layout_below="@+id/sMarca"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
         android:layout_alignRight="@+id/sMarca"
         android:layout_alignEnd="@+id/sMarca" />
+
+    <Spinner
+        android:layout_width="wrap_content"
+        android:layout_height="25dp"
+        android:id="@+id/sTipoCombustivel"
+        android:layout_below="@+id/sModelo"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_alignRight="@+id/sAno"
+        android:layout_alignEnd="@+id/sAno" />
+
+    <Spinner
+        android:layout_width="wrap_content"
+        android:layout_height="25dp"
+        android:id="@+id/sAno"
+        android:layout_below="@+id/sTipoCombustivel"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_alignRight="@+id/sModelo"
+        android:layout_alignEnd="@+id/sModelo" />
 
     <SeekBar
         android:layout_width="wrap_content"
@@ -35,16 +54,6 @@
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true"
         android:indeterminate="false" />
-
-    <NumberPicker
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/npAno"
-        android:layout_alignBottom="@+id/sModelo"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true"
-        android:layout_marginRight="22dp"
-        android:layout_marginEnd="22dp" />
 
     <TextView
         android:layout_width="wrap_content"
@@ -62,10 +71,10 @@
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:text="Funilaria e pintura"
         android:id="@+id/textView"
+        android:layout_marginTop="80dp"
         android:layout_below="@+id/sModelo"
         android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:layout_marginTop="25dp" />
+        android:layout_alignParentStart="true" />
 
     <SeekBar
         android:layout_width="wrap_content"
@@ -102,9 +111,13 @@
 
     <Button
         android:layout_width="200dp"
-        android:layout_height="80dp"
+        android:layout_height="50dp"
         android:text="CALCULAR"
         android:id="@+id/btnCalcular"
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true" />
+
+
+
+
 </RelativeLayout>
