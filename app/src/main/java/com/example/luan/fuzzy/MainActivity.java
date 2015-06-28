@@ -9,7 +9,10 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.SeekBar;
 import android.widget.Spinner;
+import android.widget.TextView;
 
 import com.example.luan.adapters.MarcaArrayAdapter;
 import com.example.luan.adapters.ModeloArrayAdapter;
@@ -43,9 +46,19 @@ public class MainActivity extends ActionBarActivity {
     protected ArrayList<Modelo> modelos;
     protected ArrayList<String> anos;
     private AppDataSouce dataSouce;
-    private Spinner sMarca, sModelo, sTipoCombustivel, sAno;
     private Long idMarca;
     private Long idModelo;
+    private Double fuzzyResult;
+
+    private double pcFunilariaPintura = 0;
+    private double pcMotor = 0;
+    private double pcMecanicaInterior = 0;
+
+    private SeekBar sbFunilariaPintura, sbMotor, sbMecanicaInterior;
+    private Spinner sMarca, sModelo, sTipoCombustivel, sAno;
+    private Button btnCalcular;
+    private TextView tvPreco, tvFuzzyValue, tvFPvalue, tvMvalue, tvMIvalue;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -56,7 +69,21 @@ public class MainActivity extends ActionBarActivity {
         sMarca = (Spinner)findViewById(R.id.sMarca);
         sAno = (Spinner)findViewById(R.id.sAno);
 
+        sbFunilariaPintura = (SeekBar)findViewById(R.id.sbFunilariaPintura);
+        sbMotor = (SeekBar)findViewById(R.id.sbMotor);
+        sbMecanicaInterior = (SeekBar)findViewById(R.id.sbMecanicaInterior);
+
+        btnCalcular = (Button)findViewById(R.id.btnCalcular);
+
+        tvPreco = (TextView)findViewById(R.id.tvPreco);
+        tvFuzzyValue = (TextView)findViewById(R.id.tvFuzzyValue);
+        tvFPvalue = (TextView)findViewById(R.id.tvFPvalue);
+        tvMvalue = (TextView)findViewById(R.id.tvMvalue);
+        tvMIvalue = (TextView)findViewById(R.id.tvMIvalue);
+
         dataSouce =  new AppDataSouce(this);
+        //TODO: TRAZER TIPO DE COMBUSTIVEL ATRAVEZ DE QUERY NO BANCO, USANDO GROUP BY PARA NAO REPETIR OS TIPOS -
+        //TODO: CRIAR ADPTER PARA O SPINNER COMBUSTIVEL PARA POPULAR COM O RESULTADO DA QUERY
 
         //CREATE DATABASE
         try {
@@ -81,18 +108,12 @@ public class MainActivity extends ActionBarActivity {
                 Log.d("idMarca SELECTED: ", "" + idMarca);
 
                 addItemsOnModelo(idMarca);
-
-              /*  String tipoSelected = sTipoCombustivel.getSelectedItem().toString();
-                if(position == 4){
-                    tipoSelected = "Gasolina";
-                }
-                */
             }
 
             @Override
             public void onNothingSelected(AdapterView<?> parent) {
                 //Setting default value for marca spinner
-                sMarca.setSelection(0);
+                //  sMarca.setSelection(0);
             }
         });
 
@@ -110,7 +131,7 @@ public class MainActivity extends ActionBarActivity {
             @Override
             public void onNothingSelected(AdapterView<?> parent) {
                 //Setting default value for modelo spinner
-                sModelo.setSelection(0);
+               // sModelo.setSelection(0);
             }
         });
 
@@ -134,39 +155,122 @@ public class MainActivity extends ActionBarActivity {
             }
         });
 
+        sAno.post(new Runnable() {
+            public void run() {
+                sAno.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                    @Override
+                    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                        Log.d("Selected", " - SIM");
+                        String anoSelected = sAno.getSelectedItem().toString();
+                        Double result = findPriceVeiculo(anoSelected, idModelo);
+                        if (result != null)
+                            tvPreco.setText(result.toString());
+                    }
 
-    /*TOOK OFF TEMPORARY FOR TESTTING THE DATABASE***********************************
+                    @Override
+                    public void onNothingSelected(AdapterView<?> parent) {
+
+                    }
+                });
+            }
+        });
+
+        sbFunilariaPintura.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                pcFunilariaPintura = progress;
+                pcFunilariaPintura /= 100;
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                fuzzyProcess();
+                tvFPvalue.setText(String.valueOf(pcFunilariaPintura));
+            }
+        });
+
+        sbMotor.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                pcMotor = progress;
+                pcMotor/=100;
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                fuzzyProcess();
+                tvMvalue.setText(String.valueOf(pcMotor));
+            }
+        });
+
+        sbMecanicaInterior.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                pcMecanicaInterior = progress;
+                pcMecanicaInterior/=100;
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                fuzzyProcess();
+                tvMIvalue.setText(String.valueOf(pcMecanicaInterior));
+            }
+        });
+
+    /*TOOK OFF TEMPORARY FOR TESTTING THE DATABASE************************************/
+
+    }
+
+    public void fuzzyProcess(){
+
         boolean first = true;
         InputStream in = null;
         ArrayList parameterList = new ArrayList();
 
         try {
-            in = MyApplication.getAppContext().getAssets().open("tipper.fcl");
+            in = MyApplication.getAppContext().getAssets().open("fuzzy.fcl");
         } catch (IOException e) {
             e.printStackTrace();
         };
 
         // Load from 'FCL' file
-        String fileName = "tipper.fcl";
+        String fileName = "fuzzy.fcl";
         FIS fis = FIS.load(in, true);
 
         // Set inputs
-        fis.setVariable("service", 3);
-        fis.setVariable("food", 7);
+        fis.setVariable("FunilariaPintura", pcFunilariaPintura);
+        fis.setVariable("MecanicaInterior", pcMecanicaInterior);
+        fis.setVariable("Motor", pcMotor);
 
         // Show each rule (and degree of support)
-        for( Rule r : fis.getFunctionBlock("tipper").getFuzzyRuleBlock("No1").getRules() ) {
+        for( Rule r : fis.getFunctionBlock("fuzzyQuality").getFuzzyRuleBlock("No1").getRules() ) {
             if (first)
                 r.setWeight(1.5);
 
-
-            System.out.println(r);
+            //System.out.println(r);
             first = false;
         }
 
         // Error while loading?
         if
-        ( fis == null ) {
+                ( fis == null ) {
             System.err.println("Can't load file: '" + fileName + "'");
             return;
         }
@@ -175,19 +279,56 @@ public class MainActivity extends ActionBarActivity {
         fis.evaluate();
 
         // Show output variable's chart
-        Variable tip = fis.getFunctionBlock("tipper").getVariable("tip");
+        Variable qualidade = fis.getFunctionBlock("fuzzyQuality").getVariable("Qualidade");
 
         // Print ruleSet
         // System.out.println(fis);
-        Log.d("Saida: ", "" + tip.defuzzify());
+        Log.d("Saida: ", "" + qualidade.defuzzify());
+        fuzzyResult = qualidade.defuzzify();
 
         // Show output variable
-        System.out.println("Output value:" + fis.getVariable("tip").getValue());*/
+        System.out.println("Output value:" + fis.getVariable("Qualidade").getValue());
+        tvFuzzyValue.setText(fuzzyResult.toString());
+
+    }
+
+    public void btnCalcularClick (View v){
+
+        tvPreco.setText(fuzzyResult.toString());
+        gerarRuleBlock();
+
+    }
+
+    public void gerarRuleBlock(){
+        String[] qualidade = {"MuitoRuim", "Ruim", "Bom", "MuitBom", "Excelente"};
+        int cont = 1;
+        for(int i = 0; i < 5; i++){
+            for(int j = 0; j < 5; j++){
+                for(int k = 0; k < 5; k++){
+                    for(int l = 0; l < 5; l++){
+                        System.out.println(" RULE "+ String.valueOf(cont++) +" : IF FunilariaPintura IS " + qualidade[i]
+                                +" AND MecanicaInterior IS " + qualidade[j]
+                                + " AND Motor " + qualidade[k] +" THEN Qualidade IS " + qualidade[l]);
+                       /* Log.d("Out", " RULE "+ String.valueOf(cont++) +" : IF FunilariaPintura IS " + qualidade[i]
+                                            +" AND MecanicaInterior IS " + qualidade[j]
+                                            + " AND Motor " + qualidade[k] +" THEN Qualidade IS " + qualidade[l]);*/
+                    }
+                }
+            }
+        }
+
+
+    }
+    private Double findPriceVeiculo(String anoSelected, Long idModelo) {
+        Log.d("AnoSelected:", anoSelected + " - IdModelo:" + idModelo.toString());
+
+        Double price = dataSouce.findPrice(anoSelected, idModelo);
+        return price;
     }
 
     private void addItemsOnAno(String tipoSelected, Long idModelo) {
 
-        Log.d("Params: - ", tipoSelected + " - " + idMarca.toString());
+        Log.d("TipoCombSelected:", tipoSelected + " - IdModelo:" + idModelo.toString());
         anos = dataSouce.findAllAnosByTipoCombustivel(tipoSelected, idModelo);
 
         ArrayAdapter<String> dataAdapter = new ArrayAdapter<String>(this,
@@ -199,7 +340,7 @@ public class MainActivity extends ActionBarActivity {
 
     private void addItemsOnTipoCombustivel() {
 
-
+        //TODO: Create ArrayAdapter for this spinner and anoSpinner too, to equalize height of all spinner's items
         ArrayList<String> list = new ArrayList<String>();
         list.add("Selecione o tipo de combustivel");
         list.add("Gasolina");
@@ -215,7 +356,6 @@ public class MainActivity extends ActionBarActivity {
 
     private void addItemsOnsMarca() {
 
-
         marcas = dataSouce.findAllMarcas();
 
         /*for (int i = 0 ; i < marcas.size() ; i++)
@@ -224,6 +364,7 @@ public class MainActivity extends ActionBarActivity {
         MarcaArrayAdapter adapter = new MarcaArrayAdapter(marcas);
 
         sMarca.setAdapter(adapter);
+
     }
 
     private void addItemsOnModelo(Long marcaId){
@@ -231,8 +372,8 @@ public class MainActivity extends ActionBarActivity {
 
         modelos = dataSouce.findModelosByMarcaId(marcaId);
 
-        for (int i = 0 ; i < modelos.size() ; i++)
-            Log.d("Modelos: ", modelos.get(i).getNome().toString() + "Id: " + modelos.get(i).getIdModelo().toString());
+        /*for (int i = 0 ; i < modelos.size() ; i++)
+            Log.d("Modelos: ", modelos.get(i).getNome().toString() + "Id: " + modelos.get(i).getIdModelo().toString());*/
 
         ModeloArrayAdapter adapter = new ModeloArrayAdapter(modelos);
 

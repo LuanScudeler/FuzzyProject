@@ -156,4 +156,31 @@ public class AppDataSouce {
 
         return ano;
     }
+
+    public Double findPrice(String anoSelected, Long idModelo) {
+
+        Double result = null;
+
+        Cursor cursor = database.
+                rawQuery("SELECT valor FROM ano_modelo WHERE ano = ? AND modelo = ?", new String[]{anoSelected, idModelo.toString()} );
+
+        cursor.moveToFirst();
+        while (!cursor.isAfterLast()) {
+            result = cursorToPrice(cursor);
+            Log.d("Price - ", result.toString());
+            cursor.moveToNext();
+        }
+        cursor.close();
+
+        return result;
+    }
+
+    private Double cursorToPrice(Cursor cursor) {
+        Log.d("Cursor Method", " - Entrou");
+        Double price = null;
+
+        price = cursor.getDouble(0);
+        Log.d("Cursor: Price: ", price.toString());
+        return price;
+    }
 }

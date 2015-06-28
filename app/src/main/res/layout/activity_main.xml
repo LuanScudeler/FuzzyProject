@@ -53,7 +53,8 @@
         android:layout_alignParentStart="true"
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true"
-        android:indeterminate="false" />
+        android:indeterminate="false"
+        android:max="100" />
 
     <TextView
         android:layout_width="wrap_content"
@@ -113,11 +114,80 @@
         android:layout_width="200dp"
         android:layout_height="50dp"
         android:text="CALCULAR"
+        android:onClick="btnCalcularClick"
         android:id="@+id/btnCalcular"
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true" />
 
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="Tabela Fipe: "
+        android:id="@+id/textView4"
+        android:layout_below="@+id/sbMecanicaInterior"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true" />
 
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="preco"
+        android:id="@+id/tvPreco"
+        android:layout_alignBottom="@+id/textView4"
+        android:layout_toRightOf="@+id/textView4"
+        android:layout_toEndOf="@+id/textView4" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="Fuzzy Value: "
+        android:id="@+id/textView5"
+        android:layout_below="@+id/textView4"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="fuzzyValue"
+        android:id="@+id/tvFuzzyValue"
+        android:layout_alignBottom="@+id/textView5"
+        android:layout_toRightOf="@+id/textView5"
+        android:layout_toEndOf="@+id/textView5" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="value"
+        android:id="@+id/tvFPvalue"
+        android:layout_above="@+id/sbFunilariaPintura"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="value"
+        android:id="@+id/tvMvalue"
+        android:layout_above="@+id/sbMotor"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="value"
+        android:id="@+id/tvMIvalue"
+        android:layout_above="@+id/sbMecanicaInterior"
+        android:layout_alignRight="@+id/tvMvalue"
+        android:layout_alignEnd="@+id/tvMvalue" />
 
 
 </RelativeLayout>
