@@ -183,4 +183,35 @@ public class AppDataSouce {
         Log.d("Cursor: Price: ", price.toString());
         return price;
     }
+
+    public ArrayList<String> findTipoCombustivel(Long idModelo) {
+
+        ArrayList<String> result = new ArrayList<String>();
+        String tipo = null;
+
+        //Default Value for spinner
+        result.add("Selecione um tipo de combustivel");
+
+        Cursor cursor = database.
+                rawQuery("SELECT combustivel FROM ano_modelo WHERE modelo = ? group by combustivel", new String[]{idModelo.toString()} );
+
+        cursor.moveToFirst();
+        while (!cursor.isAfterLast()) {
+            tipo = cursorToTipoCombustivel(cursor);
+            Log.d("TiposCombustivel - ", result.toString());
+            result.add(tipo);
+            cursor.moveToNext();
+        }
+        cursor.close();
+
+        return result;
+    }
+
+    private String cursorToTipoCombustivel(Cursor cursor) {
+        String tipo = null;
+
+        tipo = cursor.getString(0);
+
+        return tipo;
+    }
 }

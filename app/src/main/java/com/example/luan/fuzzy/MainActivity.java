@@ -1,6 +1,5 @@
 package com.example.luan.fuzzy;
 
-import android.content.Context;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -20,24 +19,13 @@ import com.example.luan.model.Marca;
 import com.example.luan.model.Modelo;
 
 import net.sourceforge.jFuzzyLogic.FIS;
-import net.sourceforge.jFuzzyLogic.FunctionBlock;
-import net.sourceforge.jFuzzyLogic.optimization.Parameter;
-import net.sourceforge.jFuzzyLogic.plot.JFuzzyChart;
 import net.sourceforge.jFuzzyLogic.rule.Rule;
-import net.sourceforge.jFuzzyLogic.rule.RuleBlock;
 import net.sourceforge.jFuzzyLogic.rule.Variable;
 
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
 
 
 public class MainActivity extends ActionBarActivity {
@@ -49,6 +37,8 @@ public class MainActivity extends ActionBarActivity {
     private Long idMarca;
     private Long idModelo;
     private Double fuzzyResult;
+    private Double finalResult;
+    private Double priceResult;
 
     private double pcFunilariaPintura = 0;
     private double pcMotor = 0;
@@ -57,7 +47,10 @@ public class MainActivity extends ActionBarActivity {
     private SeekBar sbFunilariaPintura, sbMotor, sbMecanicaInterior;
     private Spinner sMarca, sModelo, sTipoCombustivel, sAno;
     private Button btnCalcular;
-    private TextView tvPreco, tvFuzzyValue, tvFPvalue, tvMvalue, tvMIvalue;
+    private TextView tvPreco, tvFuzzyValue, tvFPvalue, tvMvalue, tvMIvalue, tvResult;
+
+    private static double MAX_PERCENT = 0.2;
+    private static double MIN_PERCENT = 0.25;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,10 +73,9 @@ public class MainActivity extends ActionBarActivity {
         tvFPvalue = (TextView)findViewById(R.id.tvFPvalue);
         tvMvalue = (TextView)findViewById(R.id.tvMvalue);
         tvMIvalue = (TextView)findViewById(R.id.tvMIvalue);
+        tvResult = (TextView)findViewById(R.id.tvResult);
 
         dataSouce =  new AppDataSouce(this);
-        //TODO: TRAZER TIPO DE COMBUSTIVEL ATRAVEZ DE QUERY NO BANCO, USANDO GROUP BY PARA NAO REPETIR OS TIPOS -
-        //TODO: CRIAR ADPTER PARA O SPINNER COMBUSTIVEL PARA POPULAR COM O RESULTADO DA QUERY
 
         //CREATE DATABASE
         try {
@@ -124,7 +116,7 @@ public class MainActivity extends ActionBarActivity {
                 idModelo = modelos.get(position).getIdModelo();
                 Log.d("idModelo SELECTED: ", "" + idModelo);
 
-                addItemsOnTipoCombustivel();
+                addItemsOnTipoCombustivel(idModelo);
 
             }
 
@@ -162,9 +154,11 @@ public class MainActivity extends ActionBarActivity {
                     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                         Log.d("Selected", " - SIM");
                         String anoSelected = sAno.getSelectedItem().toString();
-                        Double result = findPriceVeiculo(anoSelected, idModelo);
-                        if (result != null)
-                            tvPreco.setText(result.toString());
+                        priceResult = findPriceVeiculo(anoSelected, idModelo);
+                        if (priceResult != null)
+                            tvPreco.setText(String.format("R$ %.2f", priceResult ));
+
+
                     }
 
                     @Override
@@ -181,6 +175,18 @@ public class MainActivity extends ActionBarActivity {
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 pcFunilariaPintura = progress;
                 pcFunilariaPintura /= 100;
+
+                if(progress >= 0 && progress <= 20)
+                    tvFPvalue.setText("Muito Ruim  - " + String.valueOf(pcFunilariaPintura));
+                if(progress >= 21 && progress <= 40)
+                    tvFPvalue.setText("Ruim  - " + String.valueOf(pcFunilariaPintura));
+                if(progress >= 41 && progress <= 60)
+                    tvFPvalue.setText("Bom  - " + String.valueOf(pcFunilariaPintura));
+                if(progress >= 61 && progress <= 80)
+                    tvFPvalue.setText("Muito Bom  - " + String.valueOf(pcFunilariaPintura));
+                if(progress >= 81 && progress <= 100)
+                    tvFPvalue.setText("Excelente  - " + String.valueOf(pcFunilariaPintura));
+
             }
 
             @Override
@@ -191,7 +197,6 @@ public class MainActivity extends ActionBarActivity {
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
                 fuzzyProcess();
-                tvFPvalue.setText(String.valueOf(pcFunilariaPintura));
             }
         });
 
@@ -201,6 +206,18 @@ public class MainActivity extends ActionBarActivity {
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 pcMotor = progress;
                 pcMotor/=100;
+
+                if(progress >= 0 && progress <= 20)
+                    tvMvalue.setText("Muito Ruim  - " + String.valueOf(pcMotor));
+                if(progress >= 21 && progress <= 40)
+                    tvMvalue.setText("Ruim  - " + String.valueOf(pcMotor));
+                if(progress >= 41 && progress <= 60)
+                    tvMvalue.setText("Bom  - " + String.valueOf(pcMotor));
+                if(progress >= 61 && progress <= 80)
+                    tvMvalue.setText("Muito Bom  - " + String.valueOf(pcMotor));
+                if(progress >= 81 && progress <= 100)
+                    tvMvalue.setText("Excelente  - " + String.valueOf(pcMotor));
+
             }
 
             @Override
@@ -211,15 +228,26 @@ public class MainActivity extends ActionBarActivity {
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
                 fuzzyProcess();
-                tvMvalue.setText(String.valueOf(pcMotor));
             }
         });
 
         sbMecanicaInterior.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+
                 pcMecanicaInterior = progress;
                 pcMecanicaInterior/=100;
+
+                if(progress >= 0 && progress <= 20)
+                    tvMIvalue.setText("Muito Ruim  - " + String.valueOf(pcMecanicaInterior));
+                if(progress >= 21 && progress <= 40)
+                    tvMIvalue.setText("Ruim  - " + String.valueOf(pcMecanicaInterior));
+                if(progress >= 41 && progress <= 60)
+                    tvMIvalue.setText("Bom  - " + String.valueOf(pcMecanicaInterior));
+                if(progress >= 61 && progress <= 80)
+                    tvMIvalue.setText("Muito Bom  - " + String.valueOf(pcMecanicaInterior));
+                if(progress >= 81 && progress <= 100)
+                    tvMIvalue.setText("Excelente  - " + String.valueOf(pcMecanicaInterior));
             }
 
             @Override
@@ -230,9 +258,10 @@ public class MainActivity extends ActionBarActivity {
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
                 fuzzyProcess();
-                tvMIvalue.setText(String.valueOf(pcMecanicaInterior));
+                //tvMIvalue.setText(String.valueOf(pcMecanicaInterior));
             }
         });
+
 
     /*TOOK OFF TEMPORARY FOR TESTTING THE DATABASE************************************/
 
@@ -269,8 +298,7 @@ public class MainActivity extends ActionBarActivity {
         }
 
         // Error while loading?
-        if
-                ( fis == null ) {
+        if( fis == null ) {
             System.err.println("Can't load file: '" + fileName + "'");
             return;
         }
@@ -286,17 +314,21 @@ public class MainActivity extends ActionBarActivity {
         Log.d("Saida: ", "" + qualidade.defuzzify());
         fuzzyResult = qualidade.defuzzify();
 
+        Double minValue = priceResult * MIN_PERCENT;
+        finalResult = ((priceResult-minValue)*fuzzyResult)+minValue;
+
         // Show output variable
         System.out.println("Output value:" + fis.getVariable("Qualidade").getValue());
-        tvFuzzyValue.setText(fuzzyResult.toString());
+        tvFuzzyValue.setText(String.format("%.2f", fuzzyResult ));
+        tvResult.setText(String.format("R$ %.2f", finalResult));
 
+
+        /********FUZZY LOGIC********/
     }
 
     public void btnCalcularClick (View v){
-
         tvPreco.setText(fuzzyResult.toString());
-        gerarRuleBlock();
-
+        //gerarRuleBlock();
     }
 
     public void gerarRuleBlock(){
@@ -316,9 +348,8 @@ public class MainActivity extends ActionBarActivity {
                 }
             }
         }
-
-
     }
+
     private Double findPriceVeiculo(String anoSelected, Long idModelo) {
         Log.d("AnoSelected:", anoSelected + " - IdModelo:" + idModelo.toString());
 
@@ -338,15 +369,10 @@ public class MainActivity extends ActionBarActivity {
         sAno.setAdapter(dataAdapter);
     }
 
-    private void addItemsOnTipoCombustivel() {
+    private void addItemsOnTipoCombustivel(long idModelo) {
 
         //TODO: Create ArrayAdapter for this spinner and anoSpinner too, to equalize height of all spinner's items
-        ArrayList<String> list = new ArrayList<String>();
-        list.add("Selecione o tipo de combustivel");
-        list.add("Gasolina");
-        list.add("Diesel");
-        list.add("Alcool");
-        list.add("Flex");
+        ArrayList<String> list = dataSouce.findTipoCombustivel(idModelo);
 
         ArrayAdapter<String> dataAdapter = new ArrayAdapter<String>(this,
                 android.R.layout.simple_spinner_item, list);
@@ -364,7 +390,6 @@ public class MainActivity extends ActionBarActivity {
         MarcaArrayAdapter adapter = new MarcaArrayAdapter(marcas);
 
         sMarca.setAdapter(adapter);
-
     }
 
     private void addItemsOnModelo(Long marcaId){
