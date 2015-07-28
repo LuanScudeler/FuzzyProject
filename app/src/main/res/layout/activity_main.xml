@@ -110,18 +110,10 @@
         android:layout_alignEnd="@+id/sbMotor"
         android:indeterminate="false" />
 
-    <Button
-        android:layout_width="200dp"
-        android:layout_height="50dp"
-        android:text="CALCULAR"
-        android:onClick="btnCalcularClick"
-        android:id="@+id/btnCalcular"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true" />
-
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="50px"
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:text="Tabela Fipe: "
         android:id="@+id/textView4"
@@ -192,6 +184,8 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:textColor="#FF0000"
+        android:layout_marginTop="50px"
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:text="Resultado: "
         android:id="@+id/textView6"
@@ -202,6 +196,7 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:textStyle="bold"
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:text="result"
         android:id="@+id/tvResult"

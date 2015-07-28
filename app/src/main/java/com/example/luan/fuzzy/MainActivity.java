@@ -49,7 +49,7 @@ public class MainActivity extends ActionBarActivity {
     private Button btnCalcular;
     private TextView tvPreco, tvFuzzyValue, tvFPvalue, tvMvalue, tvMIvalue, tvResult;
 
-    private static double MAX_PERCENT = 0.2;
+    private static double MAX_PERCENT = 0.35;
     private static double MIN_PERCENT = 0.25;
 
     @Override
@@ -66,7 +66,6 @@ public class MainActivity extends ActionBarActivity {
         sbMotor = (SeekBar)findViewById(R.id.sbMotor);
         sbMecanicaInterior = (SeekBar)findViewById(R.id.sbMecanicaInterior);
 
-        btnCalcular = (Button)findViewById(R.id.btnCalcular);
 
         tvPreco = (TextView)findViewById(R.id.tvPreco);
         tvFuzzyValue = (TextView)findViewById(R.id.tvFuzzyValue);
@@ -181,11 +180,11 @@ public class MainActivity extends ActionBarActivity {
                 if(progress >= 21 && progress <= 40)
                     tvFPvalue.setText("Ruim  - " + String.valueOf(pcFunilariaPintura));
                 if(progress >= 41 && progress <= 60)
-                    tvFPvalue.setText("Bom  - " + String.valueOf(pcFunilariaPintura));
+                    tvFPvalue.setText("Mais ou menos  - " + String.valueOf(pcFunilariaPintura));
                 if(progress >= 61 && progress <= 80)
-                    tvFPvalue.setText("Muito Bom  - " + String.valueOf(pcFunilariaPintura));
+                    tvFPvalue.setText("Bom  - " + String.valueOf(pcFunilariaPintura));
                 if(progress >= 81 && progress <= 100)
-                    tvFPvalue.setText("Excelente  - " + String.valueOf(pcFunilariaPintura));
+                    tvFPvalue.setText("Muito Bom  - " + String.valueOf(pcFunilariaPintura));
 
             }
 
@@ -208,15 +207,15 @@ public class MainActivity extends ActionBarActivity {
                 pcMotor/=100;
 
                 if(progress >= 0 && progress <= 20)
-                    tvMvalue.setText("Muito Ruim  - " + String.valueOf(pcMotor));
+                    tvMvalue.setText("Muito ruim  - " + String.valueOf(pcMotor));
                 if(progress >= 21 && progress <= 40)
                     tvMvalue.setText("Ruim  - " + String.valueOf(pcMotor));
                 if(progress >= 41 && progress <= 60)
-                    tvMvalue.setText("Bom  - " + String.valueOf(pcMotor));
+                    tvMvalue.setText("Mais ou menos  - " + String.valueOf(pcMotor));
                 if(progress >= 61 && progress <= 80)
-                    tvMvalue.setText("Muito Bom  - " + String.valueOf(pcMotor));
+                    tvMvalue.setText("Bom  - " + String.valueOf(pcMotor));
                 if(progress >= 81 && progress <= 100)
-                    tvMvalue.setText("Excelente  - " + String.valueOf(pcMotor));
+                    tvMvalue.setText("Muito bom  - " + String.valueOf(pcMotor));
 
             }
 
@@ -239,15 +238,15 @@ public class MainActivity extends ActionBarActivity {
                 pcMecanicaInterior/=100;
 
                 if(progress >= 0 && progress <= 20)
-                    tvMIvalue.setText("Muito Ruim  - " + String.valueOf(pcMecanicaInterior));
+                    tvMIvalue.setText("Muito ruim  - " + String.valueOf(pcMecanicaInterior));
                 if(progress >= 21 && progress <= 40)
                     tvMIvalue.setText("Ruim  - " + String.valueOf(pcMecanicaInterior));
                 if(progress >= 41 && progress <= 60)
-                    tvMIvalue.setText("Bom  - " + String.valueOf(pcMecanicaInterior));
+                    tvMIvalue.setText("Mais ou Menos  - " + String.valueOf(pcMecanicaInterior));
                 if(progress >= 61 && progress <= 80)
-                    tvMIvalue.setText("Muito Bom  - " + String.valueOf(pcMecanicaInterior));
+                    tvMIvalue.setText("Bom  - " + String.valueOf(pcMecanicaInterior));
                 if(progress >= 81 && progress <= 100)
-                    tvMIvalue.setText("Excelente  - " + String.valueOf(pcMecanicaInterior));
+                    tvMIvalue.setText("Muito Bom  - " + String.valueOf(pcMecanicaInterior));
             }
 
             @Override
@@ -315,7 +314,10 @@ public class MainActivity extends ActionBarActivity {
         fuzzyResult = qualidade.defuzzify();
 
         Double minValue = priceResult * MIN_PERCENT;
-        finalResult = ((priceResult-minValue)*fuzzyResult)+minValue;
+        Double maxValue = priceResult * MAX_PERCENT;
+
+        // Generate final result (Car price)
+        finalResult = (((priceResult-minValue)+maxValue)*fuzzyResult)+minValue;
 
         // Show output variable
         System.out.println("Output value:" + fis.getVariable("Qualidade").getValue());
