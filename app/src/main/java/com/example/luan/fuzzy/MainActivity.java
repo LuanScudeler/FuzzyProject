@@ -1,5 +1,7 @@
 package com.example.luan.fuzzy;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -12,6 +14,7 @@ import android.widget.Button;
 import android.widget.SeekBar;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.luan.adapters.MarcaArrayAdapter;
 import com.example.luan.adapters.ModeloArrayAdapter;
@@ -40,6 +43,8 @@ public class MainActivity extends ActionBarActivity {
     private Double finalResult;
     private Double priceResult;
 
+    private AlertDialog alerta;
+
     private double pcFunilariaPintura = 0;
     private double pcMotor = 0;
     private double pcMecanicaInterior = 0;
@@ -65,7 +70,6 @@ public class MainActivity extends ActionBarActivity {
         sbFunilariaPintura = (SeekBar)findViewById(R.id.sbFunilariaPintura);
         sbMotor = (SeekBar)findViewById(R.id.sbMotor);
         sbMecanicaInterior = (SeekBar)findViewById(R.id.sbMecanicaInterior);
-
 
         tvPreco = (TextView)findViewById(R.id.tvPreco);
         tvFuzzyValue = (TextView)findViewById(R.id.tvFuzzyValue);
@@ -157,12 +161,18 @@ public class MainActivity extends ActionBarActivity {
                         if (priceResult != null)
                             tvPreco.setText(String.format("R$ %.2f", priceResult ));
 
+                        //Manage the access to the seekBars
+                        if(anoSelected.contentEquals("Selecione um ano"))
+                            changeSBstate(false);
+                        else
+                            changeSBstate(true);
+
+
 
                     }
 
                     @Override
                     public void onNothingSelected(AdapterView<?> parent) {
-
                     }
                 });
             }
@@ -176,7 +186,7 @@ public class MainActivity extends ActionBarActivity {
                 pcFunilariaPintura /= 100;
 
                 if(progress >= 0 && progress <= 20)
-                    tvFPvalue.setText("Muito Ruim  - " + String.valueOf(pcFunilariaPintura));
+                    tvFPvalue.setText("Pessimo  - " + String.valueOf(pcFunilariaPintura));
                 if(progress >= 21 && progress <= 40)
                     tvFPvalue.setText("Ruim  - " + String.valueOf(pcFunilariaPintura));
                 if(progress >= 41 && progress <= 60)
@@ -184,7 +194,7 @@ public class MainActivity extends ActionBarActivity {
                 if(progress >= 61 && progress <= 80)
                     tvFPvalue.setText("Bom  - " + String.valueOf(pcFunilariaPintura));
                 if(progress >= 81 && progress <= 100)
-                    tvFPvalue.setText("Muito Bom  - " + String.valueOf(pcFunilariaPintura));
+                    tvFPvalue.setText("Otimo  - " + String.valueOf(pcFunilariaPintura));
 
             }
 
@@ -195,7 +205,12 @@ public class MainActivity extends ActionBarActivity {
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-                fuzzyProcess();
+                try {
+                    fuzzyProcess();
+                }catch (Exception ex){
+                    Log.d("Catched", "On");
+                    infoAlert();
+                }
             }
         });
 
@@ -207,7 +222,7 @@ public class MainActivity extends ActionBarActivity {
                 pcMotor/=100;
 
                 if(progress >= 0 && progress <= 20)
-                    tvMvalue.setText("Muito ruim  - " + String.valueOf(pcMotor));
+                    tvMvalue.setText("Pessimo  - " + String.valueOf(pcMotor));
                 if(progress >= 21 && progress <= 40)
                     tvMvalue.setText("Ruim  - " + String.valueOf(pcMotor));
                 if(progress >= 41 && progress <= 60)
@@ -215,7 +230,7 @@ public class MainActivity extends ActionBarActivity {
                 if(progress >= 61 && progress <= 80)
                     tvMvalue.setText("Bom  - " + String.valueOf(pcMotor));
                 if(progress >= 81 && progress <= 100)
-                    tvMvalue.setText("Muito bom  - " + String.valueOf(pcMotor));
+                    tvMvalue.setText("Otimo  - " + String.valueOf(pcMotor));
 
             }
 
@@ -226,7 +241,12 @@ public class MainActivity extends ActionBarActivity {
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-                fuzzyProcess();
+                try {
+                    fuzzyProcess();
+                }catch (Exception ex){
+                    Log.d("Catched", "On");
+                    infoAlert();
+                }
             }
         });
 
@@ -238,7 +258,7 @@ public class MainActivity extends ActionBarActivity {
                 pcMecanicaInterior/=100;
 
                 if(progress >= 0 && progress <= 20)
-                    tvMIvalue.setText("Muito ruim  - " + String.valueOf(pcMecanicaInterior));
+                    tvMIvalue.setText("Pessimo  - " + String.valueOf(pcMecanicaInterior));
                 if(progress >= 21 && progress <= 40)
                     tvMIvalue.setText("Ruim  - " + String.valueOf(pcMecanicaInterior));
                 if(progress >= 41 && progress <= 60)
@@ -246,7 +266,7 @@ public class MainActivity extends ActionBarActivity {
                 if(progress >= 61 && progress <= 80)
                     tvMIvalue.setText("Bom  - " + String.valueOf(pcMecanicaInterior));
                 if(progress >= 81 && progress <= 100)
-                    tvMIvalue.setText("Muito Bom  - " + String.valueOf(pcMecanicaInterior));
+                    tvMIvalue.setText("Otimo  - " + String.valueOf(pcMecanicaInterior));
             }
 
             @Override
@@ -256,7 +276,13 @@ public class MainActivity extends ActionBarActivity {
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-                fuzzyProcess();
+
+                try {
+                    fuzzyProcess();
+                }catch (Exception ex){
+                    Log.d("Catched", "On");
+                    infoAlert();
+                }
                 //tvMIvalue.setText(String.valueOf(pcMecanicaInterior));
             }
         });
@@ -265,6 +291,34 @@ public class MainActivity extends ActionBarActivity {
     /*TOOK OFF TEMPORARY FOR TESTTING THE DATABASE************************************/
 
     }
+
+    //Method to enable and disable seekBars when required
+    private void changeSBstate(boolean state){
+        Log.d("METODO:", "ATIVADO");
+        sbFunilariaPintura.setEnabled(state);
+        sbMecanicaInterior.setEnabled(state);
+        sbMotor.setEnabled(state);
+    }
+
+    private void infoAlert() {
+    //Cria o gerador do AlertDialog
+     AlertDialog.Builder builder = new AlertDialog.Builder(this);
+     //define o titulo
+     builder.setTitle("Alerta");
+     //define a mensagem
+     builder.setMessage("Voce nao terminou sua selecao.");
+     //define um botão como positivo
+     builder.setNeutralButton("Ok", new DialogInterface.OnClickListener() {
+         public void onClick(DialogInterface arg0, int arg1) {
+             alerta.dismiss();
+         }
+     });
+     //cria o AlertDialog
+     alerta = builder.create();
+     //Exibe
+     alerta.show(); }
+
+
 
     public void fuzzyProcess(){
 

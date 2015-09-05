@@ -93,7 +93,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text="Parte mecânica e inteiror"
+        android:text="Mecânica e inteiror"
         android:id="@+id/textView3"
         android:layout_below="@+id/sbMotor"
         android:layout_alignParentLeft="true"
