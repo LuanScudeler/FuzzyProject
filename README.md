@@ -9,4 +9,5 @@ the most fair price through Fuzzy Logic processes.
 
 
 Written research: http://www.ebah.com.br/content/ABAAAg-XEAI/relatorio-fuzzy-logic-final#
+
 Presentation slides: https://www.slideshare.net/LuanSouza5/fuzzy-logic-em-aplicao-android
